@@ -10,8 +10,11 @@ import TextField from "@mui/material/TextField";
 import { Button } from "@mui/material";
 import { Formik, Form } from "formik";
 import { object, string } from "yup";
+import useAuthCalls from "../service/useAuthCalls";
 
 const Login = () => {
+  const { login } = useAuthCalls();
+
   const loginSchema = object({
     email: string()
       .email("Lütfen geçerli bir email giriniz")
@@ -19,11 +22,14 @@ const Login = () => {
     password: string()
       .required("Şifre zorunludur.")
       .min(8, "Şifre en az 8 karakter içermelidir")
-      .max(16, "Şifre en fazla 16 karakter olabilir")
+      .max(16, "Şifre en falza 16 karakter içermelidir")
       .matches(/\d+/, "Şifre en az bir rakam içermelidir")
-      .matches(/[a-z]/, "Şifre en az bir küçük karakter içermelidir")
+      .matches(/[a-z]/, "Şifre en az bir küçük harf içermelidir")
       .matches(/[A-Z]/, "Şifre en az bir büyük harf içermelidir")
-      .matches(/[@$!%*?&]+/, "Şifre en az bir özel karakter içermelidir"),
+      .matches(
+        /[@$!%*?&]+/,
+        "Şifre en az bir özel karakter (@$!%*?&) içermelidir"
+      ),
   });
   return (
     <Container maxWidth="lg">
@@ -67,6 +73,7 @@ const Login = () => {
             validationSchema={loginSchema}
             onSubmit={(values, actions) => {
               //TODO login(post) istegi
+              login(values);
               actions.resetForm();
               actions.setSubmitting(false); //? isSubmitting
               //? veriler global state'e aktırlabilir
@@ -87,7 +94,7 @@ const Login = () => {
                     onChange={handleChange}
                     onBlur={handleBlur}
                     error={touched.email && Boolean(errors.email)}
-                    helperText={touched.email && errors.email}
+                    helperText={errors.email}
                   />
                   <TextField
                     label="password"
@@ -99,7 +106,7 @@ const Login = () => {
                     onChange={handleChange}
                     onBlur={handleBlur}
                     error={touched.password && Boolean(errors.password)}
-                    helperText={touched.password && errors.password}
+                    helperText={errors.password}
                   />
                   <Button variant="contained" type="submit">
                     Submit
