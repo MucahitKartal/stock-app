@@ -8,10 +8,23 @@ import { Link } from "react-router-dom";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import { Button } from "@mui/material";
-import { Form, Formik } from "formik";
+import { Formik, Form } from "formik";
+import { object, string } from "yup";
 
 const Login = () => {
-  const loginSchema = {};
+  const loginSchema = object({
+    email: string()
+      .email("Lütfen geçerli bir email giriniz")
+      .required("Email girişi zorunludur"),
+    password: string()
+      .required("Şifre zorunludur.")
+      .min(8, "Şifre en az 8 karakter içermelidir")
+      .max(16, "Şifre en fazla 16 karakter olabilir")
+      .matches(/\d+/, "Şifre en az bir rakam içermelidir")
+      .matches(/[a-z]/, "Şifre en az bir küçük karakter içermelidir")
+      .matches(/[A-Z]/, "Şifre en az bir büyük harf içermelidir")
+      .matches(/[@$!%*?&]+/, "Şifre en az bir özel karakter içermelidir"),
+  });
   return (
     <Container maxWidth="lg">
       <Grid
@@ -48,23 +61,22 @@ const Login = () => {
           >
             Login
           </Typography>
+
           <Formik
             initialValues={{ email: "", password: "" }}
             validationSchema={loginSchema}
             onSubmit={(values, actions) => {
+              //TODO login(post) istegi
               actions.resetForm();
-              actions.setSubmitting(false);
-              //? Login işlemi post işlemidir çünkü girdiğimiz verileri GÖNDERİYORUZ.
-              //? Sayfa yönlendirme işlemi(navigation) yapılabilir
-              //? login bilgileri global state'e aktarılabilir
+              actions.setSubmitting(false); //? isSubmitting
+              //? veriler global state'e aktırlabilir
+              //? navigasyon yapılabilir
+              //? tost yapılabilr
             }}
           >
-            {({ values, handleChange, touched, errors }) => (
+            {({ handleChange, values, touched, errors, handleBlur }) => (
               <Form>
-                <Box
-                  component="form"
-                  sx={{ display: "flex", flexDirection: "column", gap: 2 }}
-                >
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                   <TextField
                     label="Email"
                     name="email"
@@ -73,6 +85,9 @@ const Login = () => {
                     variant="outlined"
                     value={values.email}
                     onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={touched.email && Boolean(errors.email)}
+                    helperText={touched.email && errors.email}
                   />
                   <TextField
                     label="password"
@@ -82,8 +97,9 @@ const Login = () => {
                     variant="outlined"
                     value={values.password}
                     onChange={handleChange}
-                    error={touched.email && Boolean(errors.email)}
-                    helperText={errors.email}
+                    onBlur={handleBlur}
+                    error={touched.password && Boolean(errors.password)}
+                    helperText={touched.password && errors.password}
                   />
                   <Button variant="contained" type="submit">
                     Submit
